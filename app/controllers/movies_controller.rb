@@ -8,27 +8,43 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings = Movie.all_ratings
+    
+    @need_redirect_ratings = false
+    @need_redirect_order = false
+    
     if params.key?(:ratings)
       @ratings_to_show = params[:ratings].keys
     elsif session[:ratings]
       @ratings_to_show = session[:ratings]
+      @need_redirect_ratings = true
     else
       @ratings_to_show = @all_ratings
     end
-    session[:ratings] = @ratings_to_show
+    session[:ratings] = @ratings
     @movies = Movie.with_ratings(@ratings_to_show)
     
     if params.key?(:orderBy)
       @order = params[:orderBy]
+      session[:order] = @order
     elsif session[:order]
       @order = session[:order]
+      @need_redirect_order = true
     end
-    session[:order] = @order
-      
     if @order == 'title'
       @movies = Movie.with_ratings(@ratings_to_show).order('title')
     elsif @order == 'release_date'
       @movies = Movie.with_ratings(@ratings_to_show).order('release_date')
+    end
+    
+    if @need_redirect_order and @need_redirect_ratings
+      redirect_to movies_path(:ratings => @ratings_to_show.map{ |x| [x, 1] }.to_h, :order => @order)
+      return
+    elsif @need_redirect_order
+      redirect_to movies_path(:order => @order)
+      return
+    elsif @need_redirect_ratings
+      redirect_to movies_path(:ratings => @ratings_to_show.map{ |x| [x, 1] }.to_h)
+      return
     end
   end
 
