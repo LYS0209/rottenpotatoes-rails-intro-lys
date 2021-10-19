@@ -20,6 +20,8 @@ class MoviesController < ApplicationController
     elsif @order == 'release_date'
       @movies = Movie.with_ratings(@ratings_to_show).order('release_date')
     end
+    puts(params)
+    @movies
   end
 
   def new
